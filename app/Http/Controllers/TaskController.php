@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTasksRequest;
 use App\Models\tasks;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,16 +21,19 @@ class TaskController extends Controller
                     'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : null,
                 ];
             }),
+            'flash' => [
+                'success' => session('success'),
+            ],
         ]);
     }
-    public function store(Request $request)
+    public function store(StoreTasksRequest $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'required|in:todo,in_progress,done',
-            'due_date' => 'nullable|date',
-        ]);
+        // $request->validate([
+        //     'title' => 'required|string|max:255',
+        //     'description' => 'nullable|string',
+        //     'status' => 'required|in:todo,in_progress,done',
+        //     'due_date' => 'nullable|date',
+        // ]);
 
         Tasks::create($request->validated());
 
