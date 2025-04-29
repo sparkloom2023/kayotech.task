@@ -1,12 +1,13 @@
 <?php
 
 namespace App\Models;
-use App\Enums\Status;
+
 use Illuminate\Database\Eloquent\Model;
 
-class tasks extends Model
+class Subtask extends Model
 {
     protected $fillable = [
+        'task_id',
         'title',
         'description',
         'status',
@@ -16,8 +17,9 @@ class tasks extends Model
     protected $casts = [
         'due_date' => 'date',
     ];
-    public function subtasks() // Renamed from "task" to "subtasks"
+
+    public function task()
     {
-        return $this->hasMany(Subtask::class, 'task_id');
+        return $this->belongsTo(Tasks::class, 'id');
     }
 }
