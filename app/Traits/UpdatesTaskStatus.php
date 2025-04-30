@@ -14,7 +14,7 @@ trait UpdatesTaskStatus
     {
         DB::transaction(function () use ($taskId) {
             // Fetch the task with optimistic locking
-            $task = tasks::lockForUpdate()->findOrFail($taskId);
+            $task = Task::lockForUpdate()->findOrFail($taskId);
 
             // Check if all subtasks are "done"
             $notDoneCount = Subtask::where('task_id', $taskId)

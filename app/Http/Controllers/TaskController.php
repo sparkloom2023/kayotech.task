@@ -7,7 +7,7 @@ use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\StoreTasksRequest;
 use App\Models\Subtask;
 use App\Models\Task;
-use App\Models\tasks;
+
 use App\Traits\UpdatesTaskStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +18,7 @@ class TaskController extends Controller
     use UpdatesTaskStatus;
     public function index()
     {
-        $tasks = Tasks::with('subtasks')->get()->map(function ($task) {
+        $tasks = Task::with('subtasks')->get()->map(function ($task) {
             return [
                 'id' => $task->id,
                 'title' => $task->title,
@@ -51,7 +51,7 @@ class TaskController extends Controller
     // public function store(request $request)
     // {
     //     // dd($request->all());
-    //     $task = Tasks::create($request->all());
+    //     $task = Task::create($request->all());
     //     if ($request->has('subtasks') && is_array($request->input('subtasks'))) {
     //         foreach ($request->input('subtasks') as $subtaskData) {
     //             if (!empty($subtaskData['title'])) {
@@ -88,7 +88,7 @@ class TaskController extends Controller
             'due_date' => $validated['due_date'] ?? null,
         ];
 
-        $task = Tasks::create($taskData);
+        $task = Task::create($taskData);
 
         if ($request->has('subtasks') && is_array($request->input('subtasks'))) {
             foreach ($request->input('subtasks') as $subtaskData) {
@@ -125,7 +125,7 @@ class TaskController extends Controller
     //     return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     // }
 
-    public function update(Request $request, Tasks $task)
+    public function update(Request $request, Task $task)
     {
         // Basic validation
         $validated = $request->validate([
@@ -166,7 +166,7 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
-    public function destroy(Tasks $task)
+    public function destroy(Task $task)
     {
         $task->delete();
 

@@ -309,7 +309,7 @@ export default {
                     },
                 });
             } else if (modalType.value === 'edit') {
-                form.put(route('tasks.update', form.id) || `/tasks/${form.id}`, {
+                form.put(route('tasks.update', form.id) || `/Task/${form.id}`, {
                     onSuccess: () => {
                         form.reset();
                         showModal.value = false;
@@ -320,7 +320,7 @@ export default {
                 });
             } else {
                 // Send task and subtasks together
-                form.post(route('tasks.store') || '/tasks', {
+                form.post(route('tasks.store') || '/Task', {
                     onSuccess: () => {
                         form.reset();
                         showModal.value = false;
@@ -334,7 +334,7 @@ export default {
 
         function deleteTask(task) {
             if (confirm('Are you sure you want to delete this task?')) {
-                useForm({}).delete(route('tasks.destroy', task.id) || `/tasks/${task.id}`, {
+                useForm({}).delete(route('tasks.destroy', task.id) || `/Task/${task.id}`, {
                     onSuccess: () => {
                         console.log('Task deleted successfully');
                         expandedTaskId.value = null; // Reset expanded task after deletion
