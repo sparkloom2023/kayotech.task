@@ -35,7 +35,7 @@ class TaskController extends Controller
             ];
         })->toArray();
 
-        // Log::info('Tasks data sent to frontend:', $tasks);
+        // Log::info('Tasks data are visible in front:', $tasks);
         // dd($tasks);
 
         return Inertia::render('Tasks/Index', [
@@ -46,12 +46,10 @@ class TaskController extends Controller
             ],
         ]);
     }
-    public function store(StoreTasksRequest $request)
+    public function store(request $request)
     {
-        // Create the task
-        $task = Tasks::create($request->validated());
-
-        // Create subtasks if provided
+// dd($request->all());
+        $task = Tasks::create($request->all());
         if ($request->has('subtasks') && is_array($request->input('subtasks'))) {
             foreach ($request->input('subtasks') as $subtaskData) {
                 if (!empty($subtaskData['title'])) {
@@ -64,7 +62,6 @@ class TaskController extends Controller
                 }
             }
         }
-
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
 
@@ -72,16 +69,13 @@ class TaskController extends Controller
     {
         $task->update($request->all());
         if ($request->has('subtasks') && is_array($request->input('subtasks'))) {
-            // Optionally delete existing subtasks (if you want to replace them)
             $task->subtasks()->delete();
-
-            // Create new subtasks
             foreach ($request->input('subtasks') as $subtaskData) {
                 if (!empty($subtaskData['title'])) {
                     $task->subtasks()->create([
                         'title' => $subtaskData['title'],
                         'status' => $subtaskData['status'] ?? 'todo',
-                        'description' => $subtaskData['description'] ?? null,
+
                         'due_date' => $subtaskData['due_date'] ?? null,
                     ]);
                 }
@@ -95,13 +89,5 @@ class TaskController extends Controller
         $task->delete();
 
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
-    }
-
-    public function storeSubtask(Request $request)
-    {
-        dd($request->all());
-        Subtask::create($request->validated());
-
-        return redirect()->route('tasks.index')->with('success', 'Subtask created successfully.');
     }
 }

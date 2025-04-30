@@ -9,7 +9,6 @@ class Subtask extends Model
     protected $fillable = [
         'task_id',
         'title',
-        'description',
         'status',
         'due_date',
     ];
