@@ -261,8 +261,7 @@ export default {
         function addSubtask() {
             form.subtasks.push({
                 title: '',
-
-
+                description: '',
                 status: 'todo',
                 due_date: null,
             });
