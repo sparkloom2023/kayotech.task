@@ -36,10 +36,8 @@ class TaskController extends Controller
                 })->toArray() : [],
             ];
         })->toArray();
-
         // Log::info('Tasks data are visible in front:', $tasks);
         // dd($tasks);
-
         return Inertia::render('Tasks/Index', [
             'tasks' => $tasks,
             'flash' => [
@@ -48,38 +46,10 @@ class TaskController extends Controller
             ],
         ]);
     }
-    // public function store(request $request)
-    // {
-    //     // dd($request->all());
-    //     $task = Task::create($request->all());
-    //     if ($request->has('subtasks') && is_array($request->input('subtasks'))) {
-    //         foreach ($request->input('subtasks') as $subtaskData) {
-    //             if (!empty($subtaskData['title'])) {
-    //                 $task->subtasks()->create([
-    //                     'title' => $subtaskData['title'],
-    //                     'status' => $subtaskData['status'] ?? 'todo',
-    //                     'description' => $subtaskData['description'] ?? null,
-    //                     'due_date' => $subtaskData['due_date'] ?? null,
-    //                 ]);
-    //             }
-    //         }
-    //     }
-    //     return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
-    // }
-
-    public function store(Request $request)
+    public function store(StoreTasksRequest $request)
     {
-        // Basic validation
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'required|in:todo,in_progress,done',
-            'due_date' => 'nullable|date',
-            'subtasks' => 'nullable|array',
-            'subtasks.*.title' => 'required|string|max:255',
-            'subtasks.*.status' => 'required|in:not_done,done',
-            'subtasks.*.due_date' => 'nullable|date',
-        ]);
+
+        $validated = $request->validated();
 
         $taskData = [
             'title' => $validated['title'],
@@ -101,43 +71,14 @@ class TaskController extends Controller
                 }
             }
         }
-
-        // Check if all subtasks are "done" and update task status
         $this->updateTaskStatus($task->id);
 
         return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
-    // public function update(request $request, tasks $task)
-    // {
-    //     $task->update($request->all());
-    //     if ($request->has('subtasks') && is_array($request->input('subtasks'))) {
-    //         $task->subtasks()->delete();
-    //         foreach ($request->input('subtasks') as $subtaskData) {
-    //             if (!empty($subtaskData['title'])) {
-    //                 $task->subtasks()->create([
-    //                     'title' => $subtaskData['title'],
-    //                     'status' => $subtaskData['status'] ?? 'todo',
-    //                     'due_date' => $subtaskData['due_date'] ?? null,
-    //                 ]);
-    //             }
-    //         }
-    //     }
-    //     return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
-    // }
 
-    public function update(Request $request, Task $task)
+    public function update(StoreTasksRequest $request, Task $task)
     {
-        // Basic validation
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'status' => 'required|in:todo,in_progress,done',
-            'due_date' => 'nullable|date',
-            'subtasks' => 'nullable|array',
-            'subtasks.*.title' => 'required|string|max:255',
-            'subtasks.*.status' => 'required|in:not_done,done',
-            'subtasks.*.due_date' => 'nullable|date',
-        ]);
+       $validated = $request->validated();
 
         $taskData = [
             'title' => $validated['title'],
@@ -160,16 +101,12 @@ class TaskController extends Controller
                 }
             }
         }
-
-        // Check if all subtasks are "done" and update task status
         $this->updateTaskStatus($task->id);
-
         return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
     public function destroy(Task $task)
     {
         $task->delete();
-
         return redirect()->route('tasks.index')->with('success', 'Task deleted successfully.');
     }
 }

@@ -8,7 +8,8 @@ class StoreSubtaskRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check(); // Allow authenticated users
+        // return auth()->check();
+        return true;
     }
 
     public function rules(): array
