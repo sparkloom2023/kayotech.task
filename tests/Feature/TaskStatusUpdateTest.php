@@ -2,11 +2,14 @@
 
 use App\Models\Task;  // Singular, correct model
 use App\Models\Subtask;
+use App\Models\User;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'sqlite']);
     $this->artisan('session:table');
     $this->artisan('migrate', ['--database' => 'sqlite']);
+    $user = User::factory()->create();
+    $this->actingAs($user);
 });
 
 it('creates a task with subtasks and keeps status as not_done', function () {

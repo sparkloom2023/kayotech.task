@@ -11,8 +11,8 @@ class StoreTasksRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // return auth()->check();
-        return true;
+        return auth()->check();
+        // return true;
     }
     /**
      * Get the validation rules that apply to the request.
@@ -32,14 +32,5 @@ class StoreTasksRequest extends FormRequest
             'subtasks.*.due_date' => 'nullable|date',
         ];
     }
-    public function messages(): array
-    {
-        return [
-            'title.required' => 'The task title is required.',
-            'title.max' => 'The task title must not exceed 255 characters.',
-            'status.required' => 'The task status is required.',
-            'status.in' => 'The status must be one of: todo, in_progress, done.',
-            'due_date.date' => 'The due date must be a valid date.',
-        ];
-    }
+
 }

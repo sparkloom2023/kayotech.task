@@ -2,11 +2,14 @@
 
 use App\Models\Task;
 use App\Models\Subtask;
+use App\Models\User;
 
 beforeEach(function () {
     $this->artisan('migrate', ['--database' => 'sqlite']);
     $this->artisan('session:table');
     $this->artisan('migrate', ['--database' => 'sqlite']);
+    $user = User::factory()->create();
+    $this->actingAs($user);
 });
 
 it('updates a subtask and redirects to tasks index', function () {
