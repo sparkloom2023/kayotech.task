@@ -27,7 +27,7 @@ RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Install Node.js dependencies for Vite
 RUN npm install
-
+RUN npm run build
 # Set permissions for Laravel
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache

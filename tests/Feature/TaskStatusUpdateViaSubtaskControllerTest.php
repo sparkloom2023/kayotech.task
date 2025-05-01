@@ -35,7 +35,7 @@ it('updates a subtask and redirects to tasks index', function () {
     expect($subtask->status)->toBe('done');
     expect($subtask->due_date->format('Y-m-d'))->toBe('2025-05-02'); // Fixed: Convert Carbon to string
 });
-it('updates task status to done when all subtasks are done via SubtaskController', function () {
+it('updates task status to done when all subtasks are done in  SubtaskController', function () {
 
     $task = Task::factory()->create(['status' => 'todo']);
     $subtask1 = Subtask::factory()->create([
