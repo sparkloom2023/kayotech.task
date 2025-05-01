@@ -1,18 +1,38 @@
 <template>
     <div class="p-6">
+        <!-- بخش نمایش اعلان‌ها -->
+        <div v-if="flash.success || flash.error" class="mb-4">
+            <div v-if="flash.success" class="p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
+                {{ flash.success }}
+            </div>
+            <div v-if="flash.error" class="p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
+                {{ flash.error }}
+            </div>
+        </div>
+
         <h1 class="text-2xl font-bold mb-4">Tasks</h1>
         <table class="w-full border-collapse border border-gray-300">
             <thead>
                 <tr class="bg-gray-100">
                     <th class="border border-gray-300 p-2">Title</th>
                     <th class="border border-gray-300 p-2">Description</th>
-                    <th class="border border-gray-300 p-2">Status</th>
-                    <th class="border border-gray-300 p-2">Due Date</th>
+                    <th class="border border-gray-300 p-2 cursor-pointer" @click="sortBy('status')">
+                        Status
+                        <span v-if="sortKey === 'status'" class="ml-1">
+                            {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                        </span>
+                    </th>
+                    <th class="border border-gray-300 p-2 cursor-pointer" @click="sortBy('due_date')">
+                        Due Date
+                        <span v-if="sortKey === 'due_date'" class="ml-1">
+                            {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                        </span>
+                    </th>
                     <th class="border border-gray-300 p-2">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <template v-for="task in tasks" :key="task.id">
+                <template v-for="task in sortedTasks" :key="task.id">
                     <!-- Task Row -->
                     <tr>
                         <td class="border border-gray-300 p-2">{{ task.title || 'N/A' }}</td>
@@ -31,7 +51,6 @@
                             </button>
                         </td>
                     </tr>
-                    <!-- Subtasks Dropdown Row (Table Format) -->
                     <!-- Subtasks Dropdown Row (Table Format) -->
                     <tr v-if="expandedTaskId === task.id">
                         <td colspan="5" class="border border-gray-300 p-2">
@@ -73,7 +92,7 @@
                         </td>
                     </tr>
                 </template>
-                <tr v-if="!tasks || tasks.length === 0">
+                <tr v-if="!sortedTasks || sortedTasks.length === 0">
                     <td colspan="5" class="border border-gray-300 p-2 text-center">No tasks found.</td>
                 </tr>
             </tbody>
@@ -175,7 +194,7 @@
 
 <script>
 import { useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 export default {
     props: {
@@ -188,13 +207,24 @@ export default {
                 );
             },
         },
+        flash: {
+            type: Object,
+            default: () => ({
+                success: null,
+                error: null,
+            }),
+        },
     },
-    setup() {
+    setup(props) {
         const showModal = ref(false);
-        const modalType = ref('create'); // 'create', 'edit', or 'editSubtask'
-        const expandedTaskId = ref(null); // Track which task's subtasks are expanded
-        const currentTaskId = ref(null); // Track the task ID for subtask operations
-        const currentSubtaskIndex = ref(null); // Track the subtask index for editing
+        const modalType = ref('create');
+        const expandedTaskId = ref(null);
+        const currentTaskId = ref(null);
+        const currentSubtaskIndex = ref(null);
+
+        // متغیرهای مرتب‌سازی
+        const sortKey = ref(''); // ستون فعلی برای مرتب‌سازی ('status' یا 'due_date')
+        const sortOrder = ref('asc'); // جهت مرتب‌سازی ('asc' یا 'desc')
 
         const form = useForm({
             id: null,
@@ -202,8 +232,55 @@ export default {
             description: '',
             status: 'todo',
             due_date: null,
-            subtasks: [], // Array to hold multiple subtasks
+            subtasks: [],
         });
+
+        // Computed property برای مرتب‌سازی تسک‌ها
+        const sortedTasks = computed(() => {
+            if (!sortKey.value) {
+                return props.tasks; // اگر مرتب‌سازی انتخاب نشده، داده‌ها بدون تغییر برگردانده می‌شن
+            }
+
+            const tasksCopy = [...props.tasks]; // کپی از داده‌ها برای جلوگیری از تغییر داده‌های اصلی
+
+            return tasksCopy.sort((a, b) => {
+                let valueA = a[sortKey.value];
+                let valueB = b[sortKey.value];
+
+                // مدیریت مقادیر null برای due_date
+                if (sortKey.value === 'due_date') {
+                    valueA = valueA ? new Date(valueA) : new Date('9999-12-31'); // تسک‌های بدون تاریخ در آخر
+                    valueB = valueB ? new Date(valueB) : new Date('9999-12-31');
+                }
+
+                // مدیریت مقادیر null برای status
+                if (sortKey.value === 'status') {
+                    valueA = valueA || '';
+                    valueB = valueB || '';
+                }
+
+                // مقایسه مقادیر
+                if (valueA < valueB) {
+                    return sortOrder.value === 'asc' ? -1 : 1;
+                }
+                if (valueA > valueB) {
+                    return sortOrder.value === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        });
+
+        // متد برای تغییر ستون و جهت مرتب‌سازی
+        function sortBy(key) {
+            if (sortKey.value === key) {
+                // اگر روی همان ستون کلیک شده، جهت مرتب‌سازی رو تغییر بده
+                sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+            } else {
+                // اگر ستون جدیدی انتخاب شده، مرتب‌سازی رو از صعودی شروع کن
+                sortKey.value = key;
+                sortOrder.value = 'asc';
+            }
+        }
 
         function openCreateModal() {
             modalType.value = 'create';
@@ -215,18 +292,16 @@ export default {
 
         function editTask(task) {
             modalType.value = 'edit';
-            currentTaskId.value = task.id; form.errors.description
+            currentTaskId.value = task.id;
             form.id = task.id;
             form.title = task.title || '';
             form.description = task.description || '';
             form.status = task.status || 'todo';
             form.due_date = task.due_date || null;
 
-            // Debug the task and its subtasks
             console.log('Task being edited:', task);
             console.log('Subtasks received:', task.subtasks);
 
-            // Map subtasks, ensuring description is included
             form.subtasks = task.subtasks && Array.isArray(task.subtasks)
                 ? task.subtasks.map(subtask => {
                     const mappedSubtask = {
@@ -248,14 +323,12 @@ export default {
             currentSubtaskIndex.value = subtaskIndex;
             const subtask = task.subtasks[subtaskIndex];
 
-            // Populate form with only the subtask being edited
             form.reset();
             form.id = subtask.id;
             form.title = subtask.title || '';
-
             form.status = subtask.status || 'not_done';
             form.due_date = subtask.due_date || null;
-            form.subtasks = []; // Clear subtasks since we're editing a single subtask
+            form.subtasks = [];
             showModal.value = true;
         }
 
@@ -284,7 +357,6 @@ export default {
                 useForm({}).delete(route('subtasks.destroy', subtaskId) || `/subtasks/${subtaskId}`, {
                     onSuccess: () => {
                         console.log('Subtask deleted successfully');
-                        // Inertia will automatically refresh the page data
                     },
                     onError: (errors) => {
                         console.error('Delete subtask errors:', errors);
@@ -295,14 +367,12 @@ export default {
 
         function submitForm() {
             if (modalType.value === 'editSubtask') {
-                // Update a single subtask
                 form.put(route('subtasks.update', form.id) || `/subtasks/${form.id}`, {
                     onSuccess: () => {
                         form.reset();
                         showModal.value = false;
                         currentTaskId.value = null;
                         currentSubtaskIndex.value = null;
-                        // Inertia will automatically refresh the page data
                     },
                     onError: (errors) => {
                         console.error('Update subtask errors:', errors);
@@ -319,7 +389,6 @@ export default {
                     },
                 });
             } else {
-                // Send task and subtasks together
                 form.post(route('tasks.store') || '/Task', {
                     onSuccess: () => {
                         form.reset();
@@ -337,7 +406,7 @@ export default {
                 useForm({}).delete(route('tasks.destroy', task.id) || `/Task/${task.id}`, {
                     onSuccess: () => {
                         console.log('Task deleted successfully');
-                        expandedTaskId.value = null; // Reset expanded task after deletion
+                        expandedTaskId.value = null;
                     },
                     onError: (errors) => {
                         console.error('Delete errors:', errors);
@@ -346,7 +415,7 @@ export default {
             }
         }
 
-        return { form, submitForm, deleteTask, editTask, editSubtask, deleteSubtask, openCreateModal, showModal, modalType, addSubtask, removeSubtask, toggleSubtasks, expandedTaskId };
+        return { form, submitForm, deleteTask, editTask, editSubtask, deleteSubtask, openCreateModal, showModal, modalType, addSubtask, removeSubtask, toggleSubtasks, expandedTaskId, sortedTasks, sortBy, sortKey, sortOrder };
     },
 };
 </script>
